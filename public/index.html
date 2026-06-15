@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client Intelligence Hub — Humanz+</title>
+<style>
+:root {
+  --primary:#7c3aed;--primary-dark:#6d28d9;--primary-light:#ede9fe;--primary-ring:#c4b5fd;
+  --bg:#f8f7ff;--surface:#fff;--s2:#f9fafb;--s3:#f3f4f6;
+  --border:#e5e7eb;--text:#111827;--muted:#6b7280;--t2:#374151;
+  --pip:#92400e;--pip-bg:#fef3c7;
+  --on:#1e40af;--on-bg:#dbeafe;
+  --act:#065f46;--act-bg:#d1fae5;
+  --green:#059669;--amber:#d97706;--red:#dc2626;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,.08);
+  --shadow-lg:0 10px 30px rgba(0,0,0,.12);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;
+  display:flex;flex-direction:column;}
+button{font-family:inherit;cursor:pointer;}
+a{color:var(--primary);text-decoration:none;}
+a:hover{text-decoration:underline;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:10px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ── HEADER ── */
+.header{background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 24px;height:56px;display:flex;align-items:center;
+  justify-content:space-between;flex-shrink:0;box-shadow:var(--shadow);z-index:50;}
+.hdr-l{display:flex;align-items:center;gap:12px;}
+.logo{width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,#7c3aed,#4f46e5);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:800;font-size:13px;flex-shrink:0;}
+.hdr-title{font-size:16px;font-weight:800;letter-spacing:-.01em;}
+.hdr-sub{font-size:11.5px;color:var(--muted);}
+.hdr-r{display:flex;align-items:center;gap:10px;}
+.status-dot{width:8px;height:8px;border-radius:50%;background:#d1d5db;flex-shrink:0;}
+.status-dot.ok{background:var(--green);}
+.status-dot.warn{background:var(--amber);}
+.conn-label{font-size:11.5px;color:var(--muted);}
+.btn{padding:6px 14px;border-radius:7px;font-size:12.5px;font-weight:600;
+  border:none;transition:all .15s;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-primary:hover{background:var(--primary-dark);}
+.btn-ghost{background:transparent;color:var(--t2);border:1px solid var(--border);}
+.btn-ghost:hover{background:var(--s3);}
+.btn-green{background:#d1fae5;color:#065f46;border:1px solid #a7f3d0;}
+.btn-green:hover{background:#a7f3d0;}
+.btn-red{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;}
+.btn:disabled{opacity:.5;cursor:default;}
+
+/* ── STATS BAR ── */
+.stats{background:var(--surface);border-bottom:1px solid var(--border);
+  padding:12px 24px;display:flex;gap:10px;flex-shrink:0;overflow-x:auto;}
+.stat{flex:1;min-width:100px;padding:10px 14px;border-radius:10px;
+  border:1.5px solid var(--border);background:var(--bg);text-align:center;
+  cursor:pointer;transition:all .15s;user-select:none;}
+.stat:hover{border-color:var(--primary);}
+.stat.active{border-color:var(--primary);background:var(--primary-light);}
+.stat-n{font-size:22px;font-weight:800;color:var(--primary);}
+.stat-l{font-size:10.5px;font-weight:600;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
+
+/* ── LAYOUT ── */
+.app-body{display:flex;flex:1;overflow:hidden;}
+.main{flex:1;overflow-y:auto;padding:20px 24px;}
+.sidebar{width:340px;flex-shrink:0;border-left:1px solid var(--border);
+  overflow-y:auto;background:var(--surface);}
+
+/* ── SECTION HEADER ── */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.sec-title{font-size:15px;font-weight:700;}
+.sec-count{font-size:12px;color:var(--muted);background:var(--s3);
+  padding:2px 8px;border-radius:10px;font-weight:600;}
+
+/* ── CLIENT CARD ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:14px 16px;margin-bottom:10px;animation:fadein .2s ease;
+  transition:box-shadow .15s;}
+.card:hover{box-shadow:var(--shadow-md);}
+.card.urgent{border-left:3px solid var(--red);}
+.card.high{border-left:3px solid var(--amber);}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.card-name{font-size:14px;font-weight:700;line-height:1.3;}
+.card-sub{font-size:11.5px;color:var(--muted);margin-top:2px;}
+.card-amt{font-size:13px;font-weight:700;color:var(--primary);white-space:nowrap;}
+.badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px;}
+.badge{display:inline-flex;align-items:center;gap:3px;
+  font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:5px;}
+.b-pip{background:var(--pip-bg);color:var(--pip);}
+.b-on{background:var(--on-bg);color:var(--on);}
+.b-act{background:var(--act-bg);color:var(--act);}
+.b-hi{background:#fee2e2;color:#991b1b;}
+.b-med{background:#fef3c7;color:#92400e;}
+.b-lo{background:var(--s3);color:var(--muted);}
+.b-noam{background:#fee2e2;color:#991b1b;}
+.card-meta{font-size:11.5px;color:var(--muted);margin-top:8px;
+  display:flex;gap:14px;flex-wrap:wrap;}
+.card-meta strong{color:var(--t2);}
+.card-actions{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap;}
+.btn-sm{padding:5px 11px;border-radius:6px;font-size:11.5px;font-weight:600;
+  border:none;transition:all .15s;}
+.btn-sm.pri{background:var(--primary);color:#fff;}
+.btn-sm.pri:hover{background:var(--primary-dark);}
+.btn-sm.sec{background:var(--s3);color:var(--t2);border:1px solid var(--border);}
+.btn-sm.sec:hover{background:var(--border);}
+.btn-sm.grn{background:#d1fae5;color:#065f46;}
+.btn-sm.grn:hover{background:#a7f3d0;}
+.btn-sm:disabled{opacity:.5;cursor:default;}
+
+/* ── DRAFT BOX ── */
+.draft-box{display:none;margin-top:12px;padding:12px;
+  background:var(--s2);border:1px solid var(--border);border-radius:8px;
+  font-size:12.5px;line-height:1.65;}
+.draft-box.show{display:block;}
+.draft-text{white-space:pre-wrap;margin-bottom:10px;}
+.draft-acts{display:flex;gap:7px;flex-wrap:wrap;}
+
+/* ── SIDEBAR ── */
+.sb-section{padding:16px 18px;border-bottom:1px solid var(--border);}
+.sb-title{font-size:12px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--muted);margin-bottom:10px;}
+.email-item{padding:10px 0;border-bottom:1px solid var(--border);}
+.email-item:last-child{border:none;}
+.email-from{font-size:12px;font-weight:600;color:var(--t2);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.email-subj{font-size:12px;color:var(--text);margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.email-snip{font-size:11px;color:var(--muted);margin-top:2px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.slack-item{padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.slack-item:last-child{border:none;}
+.slack-who{font-weight:600;color:var(--t2);}
+.slack-msg{color:var(--muted);margin-top:2px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.briefing-box{background:var(--primary-light);border:1px solid var(--primary-ring);
+  border-radius:9px;padding:12px;font-size:12.5px;line-height:1.6;color:#4c1d95;}
+
+/* ── SETUP BANNER ── */
+.setup-banner{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;
+  padding:14px 16px;margin-bottom:16px;font-size:13px;}
+.setup-banner h3{font-size:14px;font-weight:700;color:#92400e;margin-bottom:6px;}
+.setup-step{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:12.5px;}
+.setup-step .dot{width:18px;height:18px;border-radius:50%;
+  background:var(--amber);color:#fff;font-size:10px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.setup-step .dot.ok{background:var(--green);}
+
+/* ── EMPTY / LOADER ── */
+.empty{text-align:center;padding:50px 20px;color:var(--muted);}
+.spinner{display:inline-block;width:24px;height:24px;
+  border:3px solid var(--primary-light);border-top-color:var(--primary);
+  border-radius:50%;animation:spin .7s linear infinite;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;right:20px;z-index:999;
+  padding:10px 18px;border-radius:9px;font-size:13px;font-weight:600;
+  background:var(--text);color:#fff;
+  transform:translateY(70px);transition:transform .25s;pointer-events:none;}
+.toast.show{transform:translateY(0);}
+.toast.ok{background:var(--green);}
+.toast.err{background:var(--red);}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="hdr-l">
+    <div class="logo">H+</div>
+    <div>
+      <div class="hdr-title">Client Intelligence Hub</div>
+      <div class="hdr-sub" id="hdr-date"></div>
+    </div>
+  </div>
+  <div class="hdr-r">
+    <div style="display:flex;align-items:center;gap:6px" id="conn-status"></div>
+    <button class="btn btn-ghost" onclick="triggerBriefing()">📩 Send Briefing</button>
+    <button class="btn btn-primary" id="btn-refresh" onclick="loadData()">↻ Refresh</button>
+  </div>
+</div>
+
+<!-- STATS TABS -->
+<div class="stats" id="stats-bar"></div>
+
+<!-- BODY -->
+<div class="app-body">
+  <div class="main" id="main">
+    <div class="empty"><div class="spinner"></div><br><br>Loading your clients…</div>
+  </div>
+  <div class="sidebar">
+    <div class="sb-section">
+      <div class="sb-title">📩 Daily Briefing</div>
+      <div class="briefing-box" id="briefing-box">Click "Send Briefing" to generate today's AI summary and send it to your Slack.</div>
+    </div>
+    <div class="sb-section" id="gmail-section">
+      <div class="sb-title">📧 Recent Client Emails</div>
+      <div id="email-list"><div style="color:var(--muted);font-size:12px">Loading…</div></div>
+    </div>
+    <div class="sb-section" id="slack-section">
+      <div class="sb-title">💬 Onboarding Channel</div>
+      <div id="slack-list"><div style="color:var(--muted);font-size:12px">Loading…</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '';  // same origin
+let allDeals = [], activeTab = 'all', connected = {};
+
+// Date header
+document.getElementById('hdr-date').textContent =
+  new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+
+// ── LOAD DATA ──
+async function loadData() {
+  const btn = document.getElementById('btn-refresh');
+  btn.disabled = true; btn.textContent = '↻ Loading…';
+  try {
+    const r = await fetch(`${API}/api/dashboard`);
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+
+    allDeals  = data.deals || [];
+    connected = data.connected || {};
+
+    renderConnStatus();
+    renderSetupBanner();
+    renderStats();
+    renderDeals();
+    renderEmails(data.emails || []);
+  } catch(e) {
+    document.getElementById('main').innerHTML =
+      `<div class="empty">⚠️ ${e.message}<br><br><button class="btn btn-primary" onclick="loadData()">Retry</button></div>`;
+  }
+  btn.disabled = false; btn.textContent = '↻ Refresh';
+}
+
+// ── CONNECTION STATUS ──
+function renderConnStatus() {
+  const items = [
+    { key:'hubspot', label:'HubSpot' },
+    { key:'gmail',   label:'Gmail'   },
+    { key:'slack',   label:'Slack'   },
+  ];
+  document.getElementById('conn-status').innerHTML = items.map(i => `
+    <div class="status-dot ${connected[i.key]?'ok':'warn'}" title="${i.label}: ${connected[i.key]?'connected':'not configured'}"></div>
+    <span class="conn-label">${i.label}</span>
+  `).join('<span style="color:var(--border);margin:0 4px">·</span>');
+}
+
+// ── SETUP BANNER ──
+function renderSetupBanner() {
+  const missing = Object.entries(connected).filter(([,v])=>!v).map(([k])=>k);
+  if (!missing.length) return;
+  const steps = {
+    hubspot: 'Ask your HubSpot admin to create a Private App with <code>crm.objects.deals.read</code> scope → set <code>HUBSPOT_TOKEN</code>',
+    gmail:   'Visit <a href="/auth/google">/auth/google</a> to connect Gmail → copy refresh token to <code>GOOGLE_REFRESH_TOKEN</code>',
+    slack:   'Create a Slack app at api.slack.com → copy Bot Token to <code>SLACK_BOT_TOKEN</code>',
+  };
+  const html = `<div class="setup-banner">
+    <h3>⚙️ Setup required — ${missing.length} integration${missing.length>1?'s':''} not connected</h3>
+    ${missing.map((k,i)=>`<div class="setup-step"><div class="dot">${i+1}</div><div>${steps[k]}</div></div>`).join('')}
+  </div>`;
+  document.getElementById('main').insertAdjacentHTML('afterbegin', html);
+}
+
+// ── STATS ──
+function renderStats() {
+  const bkts = getBuckets();
+  const TABS = [
+    {key:'all',      emoji:'📊',label:'All Clients'},
+    {key:'pipeline', emoji:'🎯',label:'Pipeline'},
+    {key:'attention',emoji:'🔴',label:'Needs Attention'},
+    {key:'onboarding',emoji:'🚀',label:'Onboarding'},
+    {key:'active',   emoji:'✅',label:'Live Campaigns'},
+  ];
+  document.getElementById('stats-bar').innerHTML = TABS.map(t=>`
+    <div class="stat${activeTab===t.key?' active':''}" onclick="switchTab('${t.key}')">
+      <div class="stat-n">${bkts[t.key].length}</div>
+      <div class="stat-l">${t.emoji} ${t.label}</div>
+    </div>`).join('');
+}
+
+function getBuckets() {
+  return {
+    all:        allDeals,
+    pipeline:   allDeals.filter(d=>d.phase==='pipeline'),
+    attention:  allDeals.filter(d=>['high','no-am'].includes(d.urgency)),
+    onboarding: allDeals.filter(d=>d.phase==='onboarding'),
+    active:     allDeals.filter(d=>d.phase==='active'),
+  };
+}
+
+// ── DEALS ──
+function renderDeals() {
+  const bkts = getBuckets();
+  const deals = [...(bkts[activeTab]||[])];
+  renderStats();
+
+  if (!deals.length) {
+    document.getElementById('main').innerHTML = '<div class="empty">Nothing here 🎉</div>';
+    return;
+  }
+
+  const urgOrder = {'no-am':0,'high':1,'medium':2,'low':3};
+  deals.sort((a,b)=>urgOrder[a.urgency]-urgOrder[b.urgency]);
+
+  const tabLabels = {all:'All Clients',pipeline:'Pipeline',attention:'Needs Attention',onboarding:'Onboarding',active:'Live Campaigns'};
+  document.getElementById('main').innerHTML = `
+    <div class="sec-hdr">
+      <div class="sec-title">${tabLabels[activeTab]||''}</div>
+      <div class="sec-count">${deals.length} clients</div>
+    </div>
+    ${deals.map(cardHtml).join('')}`;
+}
+
+function cardHtml(deal) {
+  const { phase, urgency } = deal;
+  const parts = deal.properties.dealname.split('|').map(x=>x.trim());
+  const company = parts.length>1 ? parts[1] : parts[0];
+  const contact = parts.length>1 ? parts[0] : '';
+  const intent  = parts[2]||'';
+  const lastD   = daysAgo(deal.properties.hs_lastactivitydate||deal.properties.hs_lastmodifieddate);
+  const closeD  = deal.properties.closedate ? new Date(deal.properties.closedate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : null;
+  const amt     = fmtAmt(deal.properties.amount, deal.properties.deal_currency_code);
+  const id      = deal.id;
+
+  const phBadge = {pipeline:'<span class="badge b-pip">🎯 Pipeline</span>',onboarding:'<span class="badge b-on">🚀 Onboarding</span>',active:'<span class="badge b-act">✅ Live</span>'}[phase]||'';
+  const urgBadge = {'no-am':'<span class="badge b-noam">⚠️ No AM</span>','high':'<span class="badge b-hi">🔴 Priority</span>','medium':'<span class="badge b-med">🟡 Medium</span>','low':'<span class="badge b-lo">Low</span>'}[urgency]||'';
+  const urgClass = urgency==='no-am'||urgency==='high' ? ' urgent' : urgency==='medium' ? ' high' : '';
+  const aLabel = phase==='pipeline'?'✉️ Draft Follow-up':phase==='onboarding'?'✉️ Draft Check-in':'✉️ Draft Satisfaction';
+
+  return `<div class="card${urgClass}" id="card-${id}">
+    <div class="card-top">
+      <div style="flex:1;min-width:0">
+        <div class="card-name">${esc(company)}</div>
+        ${contact?`<div class="card-sub">${esc(contact)}${intent?' · '+esc(intent):''}</div>`:''}
+        <div class="badges">${phBadge} ${urgBadge}</div>
+      </div>
+      ${amt?`<div class="card-amt">${esc(amt)}</div>`:''}
+    </div>
+    <div class="card-meta">
+      ${lastD!==null?`<span>Last activity: <strong>${lastD}d ago</strong></span>`:''}
+      ${closeD?`<span>${phase==='pipeline'?'Expected close':'Signed'}: <strong>${closeD}</strong></span>`:''}
+      ${!deal.properties.hubspot_owner_id?'<span style="color:var(--red)">⚠️ No account manager</span>':''}
+    </div>
+    <div class="card-actions">
+      <button class="btn-sm pri" onclick="getDraft('${id}')">${aLabel}</button>
+      <button class="btn-sm sec" onclick="getInsight('${id}')">🔍 AI Insight</button>
+    </div>
+    <div class="draft-box" id="db-${id}"></div>
+  </div>`;
+}
+
+// ── AI DRAFT ──
+async function getDraft(id) {
+  const deal = allDeals.find(d=>d.id==id); if (!deal) return;
+  const el = document.getElementById(`db-${id}`);
+  el.innerHTML = '<div class="spinner" style="width:16px;height:16px;border-width:2px"></div> Generating…';
+  el.classList.add('show');
+  try {
+    const r  = await fetch(`${API}/api/draft`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({deal,phase:deal.phase}) });
+    const { draft, error } = await r.json();
+    if (error) throw new Error(error);
+    el.dataset.draft = draft;
+    el.innerHTML = `<div class="draft-text">${esc(draft)}</div>
+      <div class="draft-acts">
+        <button class="btn-sm grn" onclick="sendToSlack('${id}',this)">📩 Send to Slack</button>
+        <button class="btn-sm sec" onclick="createGmailDraft('${id}',this)">📧 Gmail Draft</button>
+        <button class="btn-sm sec" onclick="copyText('${id}')">📋 Copy</button>
+      </div>`;
+  } catch(e) {
+    el.innerHTML = `<span style="color:var(--red)">${esc(e.message)}</span>`;
+  }
+}
+
+// ── AI INSIGHT ──
+async function getInsight(id) {
+  const deal = allDeals.find(d=>d.id==id); if (!deal) return;
+  const el = document.getElementById(`db-${id}`);
+  el.innerHTML = '<div class="spinner" style="width:16px;height:16px;border-width:2px"></div> Analyzing…';
+  el.classList.add('show');
+  try {
+    const r = await fetch(`${API}/api/insight`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({deal,phase:deal.phase}) });
+    const { insight, error } = await r.json();
+    if (error) throw new Error(error);
+    el.innerHTML = `<strong>🔍 AI Insight</strong><div style="margin-top:6px">${esc(insight)}</div>`;
+  } catch(e) {
+    el.innerHTML = `<span style="color:var(--red)">${esc(e.message)}</span>`;
+  }
+}
+
+// ── ACTIONS ──
+async function sendToSlack(id, btn) {
+  const el = document.getElementById(`db-${id}`);
+  const text = el.dataset.draft; if (!text) return;
+  btn.disabled=true; btn.textContent='Sending…';
+  try {
+    const deal = allDeals.find(d=>d.id==id);
+    const name = deal?.properties.dealname.split('|')[1]?.trim()||'';
+    await fetch(`${API}/api/slack/send`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text:`📋 *Draft for ${name}:*\n\n${text}`})});
+    toast('Sent to Slack! ✓','ok'); btn.textContent='✓ Sent';
+  } catch(e) { toast(e.message,'err'); btn.disabled=false; btn.textContent='📩 Send to Slack'; }
+}
+
+async function createGmailDraft(id, btn) {
+  const el = document.getElementById(`db-${id}`);
+  const text = el.dataset.draft; if (!text) return;
+  btn.disabled=true; btn.textContent='Creating…';
+  const lines = text.split('\n');
+  const subjectLine = lines.find(l=>l.toLowerCase().startsWith('subject:'))||'Subject: Follow-up';
+  const subject = subjectLine.replace(/^subject:\s*/i,'');
+  const body = lines.slice(lines.indexOf(subjectLine)+1).join('\n').trim();
+  const deal = allDeals.find(d=>d.id==id);
+  const to = prompt(`Create Gmail draft to: (enter email address)`, '');
+  if (!to) { btn.disabled=false; btn.textContent='📧 Gmail Draft'; return; }
+  try {
+    const r = await fetch(`${API}/api/gmail/draft`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({to,subject,body})});
+    const { ok, error } = await r.json();
+    if (!ok) throw new Error(error);
+    toast('Gmail draft created! ✓','ok'); btn.textContent='✓ Draft created';
+  } catch(e) { toast(e.message,'err'); btn.disabled=false; btn.textContent='📧 Gmail Draft'; }
+}
+
+function copyText(id) {
+  const el=document.getElementById(`db-${id}`);
+  navigator.clipboard.writeText(el.dataset.draft||'').then(()=>toast('Copied! ✓','ok'));
+}
+
+// ── EMAILS SIDEBAR ──
+function renderEmails(emails) {
+  const el = document.getElementById('email-list');
+  if (!emails.length) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:12px">Gmail not connected or no recent emails.</div>';
+    return;
+  }
+  el.innerHTML = emails.map(e=>`
+    <div class="email-item">
+      <div class="email-from">${esc(e.from)}</div>
+      <div class="email-subj">${esc(e.subject)}</div>
+      <div class="email-snip">${esc(e.snippet)}</div>
+    </div>`).join('');
+}
+
+// ── BRIEFING ──
+async function triggerBriefing() {
+  document.getElementById('briefing-box').innerHTML = '<div class="spinner" style="width:16px;height:16px;border-width:2px"></div> Generating and sending…';
+  try {
+    await fetch(`${API}/api/briefing/send`,{method:'POST'});
+    document.getElementById('briefing-box').innerHTML = '✅ Briefing sent to your Slack! Check your DMs.';
+    toast('Briefing sent! ✓','ok');
+  } catch(e) {
+    document.getElementById('briefing-box').innerHTML = `❌ ${e.message}`;
+    toast(e.message,'err');
+  }
+}
+
+// ── HELPERS ──
+function switchTab(t){ activeTab=t; renderDeals(); }
+function daysAgo(d){ return d ? Math.floor((Date.now()-new Date(d))/86400000) : null; }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtAmt(a,c){
+  if (!a) return null;
+  try{ return new Intl.NumberFormat('en-US',{style:'currency',currency:c||'USD',maximumFractionDigits:0}).format(+a); }
+  catch{ return a+' '+(c||''); }
+}
+let _tt;
+function toast(msg,type=''){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className='toast show'+(type?' '+type:'');
+  clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),3200);
+}
+
+// ── INIT ──
+loadData();
+</script>
+</body>
+</html>
